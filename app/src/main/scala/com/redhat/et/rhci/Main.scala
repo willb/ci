@@ -12,14 +12,17 @@ object Main {
 	hd match {
 	  case "preprocess" =>
 	    Preprocessor.main(tl.toArray)
+	  case "afforest" =>
+	    Afforest.main(tl.toArray)
 	  case _ =>
-	    Console.println("valid commands include \"preprocess\"")
+	    Console.println("valid commands include \"preprocess\", \"afforest\"")
 	}
       case Nil =>
-	Console.println("specify a command:  valid commands include \"preprocess\"")
+	Console.println("specify a command:  valid commands include \"preprocess\", \"afforest\"")
     }
   }
 }
+
 
 object Preprocessor {
   def main(args: Array[String]) {
@@ -77,6 +80,61 @@ object Preprocessor {
 
 	hashed.select("build_id", "status", "message", "features").write.mode(savemode).save(output)
 
+	sesh.sparkContext.stop
+      case None => ()
+    }
+  }
+}
+
+
+
+
+case class AConfig(data: String="out.parquet", output: String="forest.model", savemode: String="overwrite", trainSample: Double=0.7, master: Option[String]=None)
+
+object Afforest {
+  def main(args: Array[String]) {
+    val parser = new OptionParser[AConfig]("") {
+      head("rhci afforest", "0.0.1")
+
+      opt[String]("master")
+	.action((x,c) => c.copy(master=Some(x)))
+	.text("spark master to use (defaults to value of spark.master property (if set) or \"local[*]\" (if not))")
+
+      opt[String]("data")
+	.action((x,c) => c.copy(data=x))
+	.text("path of preprocessed input data (defaults to \"out.parquet\")")
+
+      opt[String]('o', "output")
+	.action((x,c) => c.copy(output=x))
+	.text("destination for parquet output (defaults to \"forest.model\")")
+
+      opt[String]("savemode")
+	.action((x,c) => c.copy(savemode=x))
+	.text("what to do if the output file already exists (default is \"overwrite\")")
+
+      opt[Double]("sample")
+	.action((x,c) => c.copy(trainSample=x))
+	.text("fraction of rows to use as training sample")
+    }
+    
+    parser.parse(args, AConfig()) match {
+      case Some(config) =>
+	val sesh = SparkSession.builder().master(config.master.getOrElse(System.getProperty("spark.master", "local[*]"))).getOrCreate()
+	val data = config.data
+	val output = config.output
+	val savemode = config.savemode
+	val trainSample = config.trainSample
+
+	val sqlc = sesh.sqlContext
+	val df = sesh.read.parquet(data)
+
+	import org.apache.spark.sql.functions._
+	import org.apache.spark.ml.classification.RandomForestClassifier
+
+	val rf = new RandomForestClassifier().setLabelCol("status").setFeaturesCol("features")
+	val Array(training, test) = df.randomSplit(Array(trainSample, 1.0d - trainSample))
+	val model = rf.fit(training)
+	
 	sesh.sparkContext.stop
       case None => ()
     }
