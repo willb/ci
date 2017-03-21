@@ -54,6 +54,8 @@ object Preprocessor {
       opt[Int]("partitions")
 	.action((x,c) => c.copy(partitions=x))
 	.text("number of partitions to generate in output file")
+
+      help("help").text("prints this help text")
     }
     
     parser.parse(args, PConfig()) match {
@@ -117,6 +119,8 @@ object Afforest {
       opt[Double]("sample")
 	.action((x,c) => c.copy(trainSample=x))
 	.text("fraction of rows to use as training sample")
+
+      help("help").text("prints this help text")
     }
     
     parser.parse(args, AConfig()) match {
@@ -171,6 +175,8 @@ object Organize {
       opt[Int]('y', "ydim")
 	.action((x,c) => c.copy(ydim=x))
 	.text("height of map (defaults to 10)")
+
+      help("help").text("prints this help text")
     }
     
     parser.parse(args, OConfig()) match {
