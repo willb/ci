@@ -14,11 +14,13 @@ object Main {
 	    Preprocessor.main(tl.toArray)
 	  case "afforest" =>
 	    Afforest.main(tl.toArray)
+	  case "organize" =>
+	    Organize.main(tl.toArray)
 	  case _ =>
-	    Console.println("valid commands include \"preprocess\", \"afforest\"")
+	    Console.println("valid commands include \"preprocess\", \"afforest\", \"organize\"")
 	}
       case Nil =>
-	Console.println("specify a command:  valid commands include \"preprocess\", \"afforest\"")
+	Console.println("specify a command:  valid commands include \"preprocess\", \"afforest\", \"organize\"")
     }
   }
 }
