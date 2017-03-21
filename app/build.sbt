@@ -9,6 +9,8 @@ scalaVersion := "2.11.8"
 val SPARK_VERSION = "2.1.0"
 val SCALA_VERSION = "2.11.8"
 
+resolvers += "Will's bintray" at "https://dl.bintray.com/willb/maven/"
+
 def commonSettings = Seq(
   libraryDependencies ++= Seq(
     "com.github.scopt" %% "scopt" % "3.5.0",
@@ -16,6 +18,7 @@ def commonSettings = Seq(
     "org.apache.spark" %% "spark-sql" % SPARK_VERSION,
     "org.apache.spark" %% "spark-mllib" % SPARK_VERSION,
     "org.scala-lang" % "scala-reflect" % SCALA_VERSION,
+    "com.redhat.et" %% "silex" % "0.1.1",
     "org.elasticsearch" %% "elasticsearch-spark-20" % "5.1.1"
   )
 )
